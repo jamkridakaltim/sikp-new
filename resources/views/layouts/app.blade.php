@@ -102,6 +102,7 @@
     <a href="/sertifikat/create">Tambah Sertifikat</a>
     <a href="/klaim">Klaim</a>
     <a href="/klaim/create">Tambah Klaim</a>
+    <a href="/logout">Keluar</a>
 </div>
 
 <div class="content">
