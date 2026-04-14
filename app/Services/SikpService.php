@@ -46,15 +46,13 @@ class SikpService
         ])->get($this->baseUrl . $endpoint, $params)->json();
     }
 
-    public function post($endpoint, $data = [])
-    {
-        return Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->getToken()
-        ])->post($this->baseUrl . $endpoint, $data)->json();
-    }
-
     public function getSertifikat($params = [])
     {
         return $this->get('/jaminan/sertifikat', $params);
+    }
+
+    public function createSertifikat($data)
+    {
+        return $this->post('/jaminan/sertifikat', $data);
     }
 }

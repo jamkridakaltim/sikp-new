@@ -1,42 +1,45 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Sertifikat</title>
-</head>
-<body>
+@extends('layouts.app')
 
-<h1>Data Sertifikat</h1>
+@section('content')
+
+<h2>Data Sertifikat</h2>
 
 <form method="GET">
-    <input type="text" name="kode_bank" placeholder="Kode Bank">
-    <button type="submit">Filter</button>
+    <input type="text" name="kode_bank" placeholder="Kode Bank" value="{{ request('kode_bank') }}">
+    <button>Filter</button>
 </form>
 
-<hr>
+@if(is_array($data) && count($data))
 
-@if(isset($data['error']) && !$data['error'])
-    <table border="1" cellpadding="5">
+<table>
+    <thead>
         <tr>
+            <th>No</th>
             <th>Kode Bank</th>
             <th>No Rekening</th>
             <th>Nama</th>
             <th>NIK</th>
-            <th>Nilai Dijamin</th>
+            <th>Nilai</th>
+            <th>Tgl Akad</th>
         </tr>
-
-        @foreach($data as $item)
-            <tr>
-                <td>{{ $item['kode_bank'] }}</td>
-                <td>{{ $item['nomor_rekening'] }}</td>
-                <td>{{ $item['nama'] }}</td>
-                <td>{{ $item['nik'] }}</td>
-                <td>{{ $item['nilai_dijamin'] }}</td>
-            </tr>
+    </thead>
+    <tbody>
+        @foreach($data as $i => $item)
+        <tr>
+            <td>{{ $i+1 }}</td>
+            <td>{{ $item['kode_bank'] }}</td>
+            <td>{{ $item['nomor_rekening'] }}</td>
+            <td>{{ $item['nama'] }}</td>
+            <td>{{ $item['nik'] }}</td>
+            <td>Rp {{ number_format($item['nilai_dijamin'],0,',','.') }}</td>
+            <td>{{ \Carbon\Carbon::parse($item['tgl_akad'])->format('d-m-Y') }}</td>
+        </tr>
         @endforeach
-    </table>
+    </tbody>
+</table>
+
 @else
-    <pre>{{ json_encode($data, JSON_PRETTY_PRINT) }}</pre>
+<p>Tidak ada data</p>
 @endif
 
-</body>
-</html>
+@endsection
