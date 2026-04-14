@@ -1,0 +1,55 @@
+<?php
+
+namespace App\Services;
+
+use Illuminate\Support\Facades\Http;
+
+class SikpService
+{
+    protected $baseUrl;
+
+    public function __construct()
+    {
+        $this->baseUrl = config('services.sikp.base_url');
+    }
+
+    public function login()
+    {
+        $response = Http::post($this->baseUrl . '/auth', [
+            'username' => config('services.sikp.username'),
+            'password' => config('services.sikp.password'),
+        ]);
+
+        return $response->json();
+    }
+
+    public function getToken()
+    {
+        $token = session('sikp_token');
+
+        if (!$token) {
+            $login = $this->login();
+
+            if (!$login['error']) {
+                $token = $login['message'];
+                session(['sikp_token' => $token]);
+            }
+        }
+
+        return $token;
+    }
+
+    public function get($endpoint, $params = [])
+    {
+        return Http::withHeaders([
+            'Authorization' => 'Bearer ' . $this->getToken()
+        ])->get($this->baseUrl . $endpoint, $params)->json();
+    }
+
+    public function post($endpoint, $data = [])
+    {
+        return Http::withHeaders([
+            'Authorization' => 'Bearer ' . $this->getToken()
+        ])->post($this->baseUrl . $endpoint, $data)->json();
+    }
+}
