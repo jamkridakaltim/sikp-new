@@ -27,12 +27,25 @@ class DashboardController extends Controller
             }
         }
 
+        // Token payload (JWT) monitoring
+        $payload = $sikp->getTokenPayload();
+
+        $expiredAt = null;
+        $remaining = null;
+
+        if ($payload && isset($payload['exp'])) {
+            $expiredAt = date('Y-m-d H:i:s', $payload['exp']);
+            $remaining = $payload['exp'] - time();
+        }
+
         return view('dashboard', [
             'sertifikat' => $sertifikat,
             'klaim' => $klaim,
             'totalSertifikat' => $totalSertifikat,
             'totalNilai' => $totalNilai,
-            'totalKlaim' => $totalKlaim
+            'totalKlaim' => $totalKlaim,
+            'expiredAt' => $expiredAt,
+            'remaining' => $remaining,
         ]);
     }
 }

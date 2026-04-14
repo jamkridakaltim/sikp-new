@@ -132,6 +132,32 @@
         <div><strong>Last sync:</strong> {{ now() }}</div>
         <div><strong>Source:</strong> SIKP API</div>
         <div style="color:#22c55e;">● Live Data</div>
+
+        <hr style="margin:10px 0; border:none; border-top:1px solid #e2e8f0;">
+
+        <div>
+            <strong>Token Expired:</strong> {{ $expiredAt ?? '-' }}
+        </div>
+
+        <div>
+            <strong>Sisa Waktu:</strong>
+            @if(!empty($remaining) && $remaining > 0)
+                {{ floor($remaining/60) }} menit
+            @else
+                -
+            @endif
+        </div>
+
+        <div>
+            <strong>Status Token:</strong>
+            @if(!empty($remaining) && $remaining > 300)
+                <span style="color:green;">● Active</span>
+            @elseif(!empty($remaining) && $remaining > 0)
+                <span style="color:orange;">● Hampir Expired</span>
+            @else
+                <span style="color:red;">● Expired</span>
+            @endif
+        </div>
     </div>
 </div>
 
