@@ -45,7 +45,7 @@
 
         .content {
             margin-left: 240px;
-            padding-left: 260px;
+            padding-left: 60px;
             padding-top: 20px;
             padding-right: 20px;
             padding-botton: 20px;
