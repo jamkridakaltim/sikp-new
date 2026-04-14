@@ -41,9 +41,15 @@ class SikpService
 
     public function get($endpoint, $params = [])
     {
-        return Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->getToken()
-        ])->get($this->baseUrl . $endpoint, $params)->json();
+        try {
+            $res = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->getToken()
+            ])->get($this->baseUrl . $endpoint, $params);
+
+            return $res->json() ?? [];
+        } catch (\Exception $e) {
+            return [];
+        }
     }
 
     public function getSertifikat($params = [])

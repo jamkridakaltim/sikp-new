@@ -80,9 +80,13 @@
             <tbody>
                 @foreach($klaim as $k)
                 <tr>
-                    <td>{{ $k['nama'] }}</td>
-                    <td>Rp {{ number_format($k['nilai_klaim'],0,',','.') }}</td>
-                    <td>{{ \Carbon\Carbon::parse($k['tgl_persetujuan_klaim'])->format('d-m-Y') }}</td>
+                    <td>{{ $k['nama'] ?? '-' }}</td>
+                    <td>Rp {{ number_format($k['nilai_klaim'] ?? 0,0,',','.') }}</td>
+                    <td>
+                        {{ isset($k['tgl_persetujuan_klaim'])
+                            ? \Carbon\Carbon::parse($k['tgl_persetujuan_klaim'])->format('d-m-Y')
+                            : '-' }}
+                    </td>
                 </tr>
                 @endforeach
             </tbody>
