@@ -55,4 +55,14 @@ class SikpService
     {
         return $this->post('/jaminan/sertifikat', $data);
     }
+
+    public function getKlaim($params = [])
+    {
+        return $this->get('/jaminan/klaim', $params);
+    }
+
+    public function createKlaim($data)
+    {
+        return $this->post('/jaminan/klaim', $data);
+    }
 }
