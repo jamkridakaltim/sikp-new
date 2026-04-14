@@ -3,12 +3,18 @@
 <head>
     <title>SIKP Penjamin</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
     <style>
         body {
             font-family: Inter, Arial;
             margin: 0;
             background: #f5f7fb;
+        }
+
+        .mono {
+            font-family: 'IBM Plex Mono', monospace;
+            letter-spacing: 0.5px;
         }
 
         .sidebar {
@@ -105,7 +111,7 @@
     <a href="/logout">Keluar</a>
 </div>
 
-<div class="content">
+<div class="content mono">
     @yield('content')
 </div>
 
