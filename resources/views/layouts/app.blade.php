@@ -45,6 +45,7 @@
 
         .content {
             margin-left: 240px;
+            padding-left: 60px;
             padding: 20px;
         }
 
@@ -99,7 +100,7 @@
         }
     </style>
 </head>
-<body>
+<body class="mono">
 
 <div class="sidebar">
     <h2>SIKP Penjamin</h2>
@@ -111,7 +112,7 @@
     <a href="/logout">Keluar</a>
 </div>
 
-<div class="content mono">
+<div class="content">
     @yield('content')
 </div>
 
