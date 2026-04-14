@@ -21,6 +21,8 @@ class SikpService
             'password' => config('services.sikp.password'),
         ]);
 
+        \Log::info('SIKP LOGIN', $response->json());
+
         return $response->json();
     }
 
@@ -30,35 +32,92 @@ class SikpService
 
             $login = $this->login();
 
-            if (!$login['error']) {
+            if (isset($login['error']) && !$login['error']) {
                 return $login['message'];
             }
+
+            \Log::error('SIKP TOKEN FAILED', $login);
 
             return null;
         });
     }
 
-    public function get($endpoint, $params = [])
+    protected function request($method, $endpoint, $data = [])
     {
         $token = $this->getToken();
 
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $token
-        ])->get($this->baseUrl . $endpoint, $params);
-
-        // kalau token invalid
-        if ($response->status() == 401) {
-
-            Cache::forget('sikp_token');
-
-            $token = $this->getToken();
-
-            return Http::withHeaders([
+        try {
+            $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $token
-            ])->get($this->baseUrl . $endpoint, $params)->json();
-        }
+            ])->$method($this->baseUrl . $endpoint, $data);
 
-        return $response->json();
+            \Log::info('SIKP REQUEST', [
+                'endpoint' => $endpoint,
+                'method' => $method,
+                'request' => $data,
+                'status' => $response->status(),
+                'response' => $response->json()
+            ]);
+
+            // retry jika token expired
+            if ($response->status() == 401) {
+
+                Cache::forget('sikp_token');
+
+                $token = $this->getToken();
+
+                $retry = Http::withHeaders([
+                    'Authorization' => 'Bearer ' . $token
+                ])->$method($this->baseUrl . $endpoint, $data);
+
+                \Log::warning('SIKP RETRY', [
+                    'endpoint' => $endpoint,
+                    'response' => $retry->json()
+                ]);
+
+                return $this->formatResponse($retry);
+            }
+
+            return $this->formatResponse($response);
+
+        } catch (\Exception $e) {
+
+            \Log::error('SIKP ERROR', [
+                'endpoint' => $endpoint,
+                'message' => $e->getMessage()
+            ]);
+
+            return [
+                'success' => false,
+                'error' => true,
+                'message' => $e->getMessage(),
+                'data' => null
+            ];
+        }
+    }
+
+    protected function formatResponse($response)
+    {
+        $json = $response->json();
+
+        return [
+            'success' => isset($json['error']) ? !$json['error'] : true,
+            'error' => $json['error'] ?? false,
+            'message' => $json['message'] ?? '',
+            'data' => $json['data'] ?? $json,
+            'status_code' => $response->status(),
+            'raw' => $json
+        ];
+    }
+
+    public function get($endpoint, $params = [])
+    {
+        return $this->request('get', $endpoint, $params);
+    }
+
+    public function post($endpoint, $data = [])
+    {
+        return $this->request('post', $endpoint, $data);
     }
 
     public function getSertifikat($params = [])

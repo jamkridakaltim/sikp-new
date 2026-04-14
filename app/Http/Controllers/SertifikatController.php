@@ -1,68 +1,163 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Services;
 
-use App\Services\SikpService;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 
-class SertifikatController extends Controller
+class SikpService
 {
-    public function index(Request $request, SikpService $sikp)
+    protected $baseUrl;
+
+    public function __construct()
     {
-        $params = array_filter([
-            'kode_bank' => $request->kode_bank,
-            'limit' => 10
-        ]);
-
-        $data = $sikp->getSertifikat($params);
-
-        return view('sertifikat.index', compact('data'));
+        $this->baseUrl = config('services.sikp.base_url');
     }
 
-    public function create()
+    public function login()
     {
-        return view('sertifikat.create');
-    }
-
-    public function store(Request $request, SikpService $sikp)
-    {
-        $request->validate([
-            'kode_bank' => 'required',
-            'nomor_rekening' => 'required',
-            'nomor_akad' => 'required',
-            'tgl_akad' => 'required',
-            'nama' => 'required',
-            'nik' => 'required',
-            'nilai_dijamin' => 'required',
-            'skema' => 'required',
+        $response = Http::post($this->baseUrl . '/auth', [
+            'username' => config('services.sikp.username'),
+            'password' => config('services.sikp.password'),
         ]);
 
-        // FORMAT DDMMYYYY sesuai SIKP
-        $tgl_akad = date('dmY', strtotime($request->tgl_akad));
-        $tgl_sp = date('dmY', strtotime($request->tgl_terbit_sp));
+        \Log::info('SIKP LOGIN', $response->json());
 
-        $response = $sikp->createSertifikat([
-            "kode_bank" => $request->kode_bank,
-            "nomor_rekening" => $request->nomor_rekening,
-            "nomor_akad" => $request->nomor_akad,
-            "tgl_akad" => $tgl_akad,
-            "nama" => $request->nama,
-            "nik" => $request->nik,
-            "nomor_sp" => $request->nomor_sp,
-            "tgl_terbit_sp" => $tgl_sp,
-            "nilai_dijamin" => $request->nilai_dijamin,
-            "skema" => $request->skema,
-        ]);
-
-        return back()->with('response', $response);
+        return $response->json();
     }
 
-    public function show($kode_bank, $rekening, SikpService $sikp)
+    public function getToken()
     {
-        $response = $sikp->detailSertifikat($kode_bank, $rekening);
+        return Cache::remember('sikp_token', 3000, function () {
 
-        $data = $response['data'] ?? null;
+            $login = $this->login();
 
-        return view('sertifikat.show', compact('data', 'response'));
+            if (isset($login['error']) && !$login['error']) {
+                return $login['message'];
+            }
+
+            \Log::error('SIKP TOKEN FAILED', $login);
+
+            return null;
+        });
+    }
+
+    protected function request($method, $endpoint, $data = [])
+    {
+        $token = $this->getToken();
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token
+            ])->$method($this->baseUrl . $endpoint, $data);
+
+            \Log::info('SIKP REQUEST', [
+                'endpoint' => $endpoint,
+                'method' => $method,
+                'request' => $data,
+                'status' => $response->status(),
+                'response' => $response->json()
+            ]);
+
+            // retry jika token expired
+            if ($response->status() == 401) {
+
+                Cache::forget('sikp_token');
+
+                $token = $this->getToken();
+
+                $retry = Http::withHeaders([
+                    'Authorization' => 'Bearer ' . $token
+                ])->$method($this->baseUrl . $endpoint, $data);
+
+                \Log::warning('SIKP RETRY', [
+                    'endpoint' => $endpoint,
+                    'response' => $retry->json()
+                ]);
+
+                return $this->formatResponse($retry);
+            }
+
+            return $this->formatResponse($response);
+
+        } catch (\Exception $e) {
+
+            \Log::error('SIKP ERROR', [
+                'endpoint' => $endpoint,
+                'message' => $e->getMessage()
+            ]);
+
+            return [
+                'success' => false,
+                'error' => true,
+                'message' => $e->getMessage(),
+                'data' => null
+            ];
+        }
+    }
+
+    protected function formatResponse($response)
+    {
+        $json = $response->json();
+
+        return [
+            'success' => isset($json['error']) ? !$json['error'] : true,
+            'error' => $json['error'] ?? false,
+            'message' => $json['message'] ?? '',
+            'data' => $json['data'] ?? $json,
+            'status_code' => $response->status(),
+            'raw' => $json
+        ];
+    }
+
+    public function get($endpoint, $params = [])
+    {
+        return $this->request('get', $endpoint, $params);
+    }
+
+    public function post($endpoint, $data = [])
+    {
+        return $this->request('post', $endpoint, $data);
+    }
+
+    public function getSertifikat($params = [])
+    {
+        return $this->get('/jaminan/sertifikat', $params);
+    }
+
+    public function createSertifikat($data)
+    {
+        return $this->post('/jaminan/sertifikat', $data);
+    }
+
+    public function detailSertifikat($kodeBank, $rekening)
+    {
+        return $this->get("/jaminan/sertifikat/$kodeBank/$rekening");
+    }
+
+    public function getKlaim($params = [])
+    {
+        return $this->get('/jaminan/klaim', $params);
+    }
+
+    public function createKlaim($data)
+    {
+        return $this->post('/jaminan/klaim', $data);
+    }
+
+    public function getTokenPayload()
+    {
+        $token = $this->getToken();
+
+        if (!$token) return null;
+
+        try {
+            $parts = explode('.', $token);
+            $payload = json_decode(base64_decode($parts[1]), true);
+
+            return $payload;
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 }
