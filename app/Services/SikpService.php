@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 
 class SikpService
 {
@@ -25,31 +26,39 @@ class SikpService
 
     public function getToken()
     {
-        $token = session('sikp_token');
+        return Cache::remember('sikp_token', 3000, function () {
 
-        if (!$token) {
             $login = $this->login();
 
             if (!$login['error']) {
-                $token = $login['message'];
-                session(['sikp_token' => $token]);
+                return $login['message'];
             }
-        }
 
-        return $token;
+            return null;
+        });
     }
 
     public function get($endpoint, $params = [])
     {
-        try {
-            $res = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->getToken()
-            ])->get($this->baseUrl . $endpoint, $params);
+        $token = $this->getToken();
 
-            return $res->json() ?? [];
-        } catch (\Exception $e) {
-            return [];
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $token
+        ])->get($this->baseUrl . $endpoint, $params);
+
+        // kalau token invalid
+        if ($response->status() == 401) {
+
+            Cache::forget('sikp_token');
+
+            $token = $this->getToken();
+
+            return Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token
+            ])->get($this->baseUrl . $endpoint, $params)->json();
         }
+
+        return $response->json();
     }
 
     public function getSertifikat($params = [])
