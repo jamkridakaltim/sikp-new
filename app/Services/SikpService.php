@@ -85,4 +85,20 @@ class SikpService
     {
         return $this->post('/jaminan/klaim', $data);
     }
+
+    public function getTokenPayload()
+    {
+        $token = $this->getToken();
+
+        if (!$token) return null;
+
+        try {
+            $parts = explode('.', $token);
+            $payload = json_decode(base64_decode($parts[1]), true);
+
+            return $payload;
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
 }
