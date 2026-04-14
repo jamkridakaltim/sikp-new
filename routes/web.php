@@ -19,6 +19,7 @@ Route::middleware('auth.static')->group(function () {
         Route::get('/', [SertifikatController::class, 'index']);
         Route::get('/create', [SertifikatController::class, 'create']);
         Route::post('/', [SertifikatController::class, 'store']);
+        Route::get('/{kode_bank}/{rekening}', [SertifikatController::class, 'show']);
     });
 
     Route::prefix('klaim')->group(function () {

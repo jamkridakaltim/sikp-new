@@ -56,4 +56,13 @@ class SertifikatController extends Controller
 
         return back()->with('response', $response);
     }
+
+    public function show($kode_bank, $rekening, SikpService $sikp)
+    {
+        $response = $sikp->detailSertifikat($kode_bank, $rekening);
+
+        $data = $response['data'] ?? null;
+
+        return view('sertifikat.show', compact('data', 'response'));
+    }
 }

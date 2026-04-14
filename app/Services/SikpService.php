@@ -62,6 +62,11 @@ class SikpService
         return $this->post('/jaminan/sertifikat', $data);
     }
 
+    public function detailSertifikat($kodeBank, $rekening)
+    {
+        return $this->get("/jaminan/sertifikat/$kodeBank/$rekening");
+    }
+
     public function getKlaim($params = [])
     {
         return $this->get('/jaminan/klaim', $params);

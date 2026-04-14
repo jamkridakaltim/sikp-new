@@ -21,6 +21,7 @@
             <th>NIK</th>
             <th>Nilai</th>
             <th>Tgl Akad</th>
+            <th>Detail</th>
         </tr>
     </thead>
     <tbody>
@@ -33,6 +34,11 @@
             <td>{{ $item['nik'] }}</td>
             <td>Rp {{ number_format($item['nilai_dijamin'],0,',','.') }}</td>
             <td>{{ \Carbon\Carbon::parse($item['tgl_akad'])->format('d-m-Y') }}</td>
+            <td>
+                <a href="/sertifikat/{{ $item['kode_bank'] }}/{{ $item['nomor_rekening'] }}">
+                    Detail
+                </a>
+            </td>
         </tr>
         @endforeach
     </tbody>
