@@ -1,163 +1,68 @@
 <?php
 
-namespace App\Services;
+namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
+use App\Services\SikpService;
+use Illuminate\Http\Request;
 
-class SikpService
+class SertifikatController extends Controller
 {
-    protected $baseUrl;
-
-    public function __construct()
+    public function index(Request $request, SikpService $sikp)
     {
-        $this->baseUrl = config('services.sikp.base_url');
-    }
-
-    public function login()
-    {
-        $response = Http::post($this->baseUrl . '/auth', [
-            'username' => config('services.sikp.username'),
-            'password' => config('services.sikp.password'),
+        $params = array_filter([
+            'kode_bank' => $request->kode_bank,
+            'limit' => 10
         ]);
 
-        \Log::info('SIKP LOGIN', $response->json());
+        $data = $sikp->getSertifikat($params);
 
-        return $response->json();
+        return view('sertifikat.index', compact('data'));
     }
 
-    public function getToken()
+    public function create()
     {
-        return Cache::remember('sikp_token', 3000, function () {
-
-            $login = $this->login();
-
-            if (isset($login['error']) && !$login['error']) {
-                return $login['message'];
-            }
-
-            \Log::error('SIKP TOKEN FAILED', $login);
-
-            return null;
-        });
+        return view('sertifikat.create');
     }
 
-    protected function request($method, $endpoint, $data = [])
+    public function store(Request $request, SikpService $sikp)
     {
-        $token = $this->getToken();
+        $request->validate([
+            'kode_bank' => 'required',
+            'nomor_rekening' => 'required',
+            'nomor_akad' => 'required',
+            'tgl_akad' => 'required',
+            'nama' => 'required',
+            'nik' => 'required',
+            'nilai_dijamin' => 'required',
+            'skema' => 'required',
+        ]);
 
-        try {
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $token
-            ])->$method($this->baseUrl . $endpoint, $data);
+        // FORMAT DDMMYYYY sesuai SIKP
+        $tgl_akad = date('dmY', strtotime($request->tgl_akad));
+        $tgl_sp = date('dmY', strtotime($request->tgl_terbit_sp));
 
-            \Log::info('SIKP REQUEST', [
-                'endpoint' => $endpoint,
-                'method' => $method,
-                'request' => $data,
-                'status' => $response->status(),
-                'response' => $response->json()
-            ]);
+        $response = $sikp->createSertifikat([
+            "kode_bank" => $request->kode_bank,
+            "nomor_rekening" => $request->nomor_rekening,
+            "nomor_akad" => $request->nomor_akad,
+            "tgl_akad" => $tgl_akad,
+            "nama" => $request->nama,
+            "nik" => $request->nik,
+            "nomor_sp" => $request->nomor_sp,
+            "tgl_terbit_sp" => $tgl_sp,
+            "nilai_dijamin" => $request->nilai_dijamin,
+            "skema" => $request->skema,
+        ]);
 
-            // retry jika token expired
-            if ($response->status() == 401) {
-
-                Cache::forget('sikp_token');
-
-                $token = $this->getToken();
-
-                $retry = Http::withHeaders([
-                    'Authorization' => 'Bearer ' . $token
-                ])->$method($this->baseUrl . $endpoint, $data);
-
-                \Log::warning('SIKP RETRY', [
-                    'endpoint' => $endpoint,
-                    'response' => $retry->json()
-                ]);
-
-                return $this->formatResponse($retry);
-            }
-
-            return $this->formatResponse($response);
-
-        } catch (\Exception $e) {
-
-            \Log::error('SIKP ERROR', [
-                'endpoint' => $endpoint,
-                'message' => $e->getMessage()
-            ]);
-
-            return [
-                'success' => false,
-                'error' => true,
-                'message' => $e->getMessage(),
-                'data' => null
-            ];
-        }
+        return back()->with('response', $response);
     }
 
-    protected function formatResponse($response)
+    public function show($kode_bank, $rekening, SikpService $sikp)
     {
-        $json = $response->json();
+        $response = $sikp->detailSertifikat($kode_bank, $rekening);
 
-        return [
-            'success' => isset($json['error']) ? !$json['error'] : true,
-            'error' => $json['error'] ?? false,
-            'message' => $json['message'] ?? '',
-            'data' => $json['data'] ?? $json,
-            'status_code' => $response->status(),
-            'raw' => $json
-        ];
-    }
+        $data = $response['data'] ?? null;
 
-    public function get($endpoint, $params = [])
-    {
-        return $this->request('get', $endpoint, $params);
-    }
-
-    public function post($endpoint, $data = [])
-    {
-        return $this->request('post', $endpoint, $data);
-    }
-
-    public function getSertifikat($params = [])
-    {
-        return $this->get('/jaminan/sertifikat', $params);
-    }
-
-    public function createSertifikat($data)
-    {
-        return $this->post('/jaminan/sertifikat', $data);
-    }
-
-    public function detailSertifikat($kodeBank, $rekening)
-    {
-        return $this->get("/jaminan/sertifikat/$kodeBank/$rekening");
-    }
-
-    public function getKlaim($params = [])
-    {
-        return $this->get('/jaminan/klaim', $params);
-    }
-
-    public function createKlaim($data)
-    {
-        return $this->post('/jaminan/klaim', $data);
-    }
-
-    public function getTokenPayload()
-    {
-        $token = $this->getToken();
-
-        if (!$token) return null;
-
-        try {
-            $parts = explode('.', $token);
-            $payload = json_decode(base64_decode($parts[1]), true);
-
-            return $payload;
-        } catch (\Exception $e) {
-            return null;
-        }
+        return view('sertifikat.show', compact('data', 'response'));
     }
 }
