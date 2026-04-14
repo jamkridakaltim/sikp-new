@@ -9,7 +9,7 @@
     <button class="btn">Filter</button>
 </form>
 
-@if(is_array($data) && count($data))
+@if(is_array($data) && count($data) && isset($data[0]) && is_array($data[0]))
 
 <table>
     <thead>
@@ -23,10 +23,14 @@
     <tbody>
         @foreach($data as $item)
         <tr>
-            <td>{{ $item['nama'] }}</td>
-            <td>{{ $item['nomor_rekening'] }}</td>
-            <td>Rp {{ number_format($item['nilai_klaim'],0,',','.') }}</td>
-            <td>{{ \Carbon\Carbon::parse($item['tgl_persetujuan_klaim'])->format('d-m-Y') }}</td>
+            <td>{{ $item['nama'] ?? '-' }}</td>
+            <td>{{ $item['nomor_rekening'] ?? '-' }}</td>
+            <td>Rp {{ number_format($item['nilai_klaim'] ?? 0,0,',','.') }}</td>
+            <td>
+                {{ isset($item['tgl_persetujuan_klaim'])
+                    ? \Carbon\Carbon::parse($item['tgl_persetujuan_klaim'])->format('d-m-Y')
+                    : '-' }}
+            </td>
         </tr>
         @endforeach
     </tbody>
