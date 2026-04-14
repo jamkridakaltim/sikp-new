@@ -52,4 +52,9 @@ class SikpService
             'Authorization' => 'Bearer ' . $this->getToken()
         ])->post($this->baseUrl . $endpoint, $data)->json();
     }
+
+    public function getSertifikat($params = [])
+    {
+        return $this->get('/jaminan/sertifikat', $params);
+    }
 }
