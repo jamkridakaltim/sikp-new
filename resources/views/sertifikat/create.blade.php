@@ -2,35 +2,58 @@
 
 @section('content')
 
-<h2>Tambah Sertifikat</h2>
+<h2>Dokumentasi API - Sertifikat SIKP</h2>
 
-@if(session('response'))
-    <pre>{{ json_encode(session('response'), JSON_PRETTY_PRINT) }}</pre>
-@endif
+<div class="card">
 
-<form method="POST">
-@csrf
+    <h3>Endpoint</h3>
+    <pre>POST /api/sertifikat</pre>
 
-<input name="kode_bank" placeholder="Kode Bank"><br>
-<input name="nomor_rekening" placeholder="No Rekening"><br>
-<input name="nomor_akad" placeholder="No Akad"><br>
-<input type="date" name="tgl_akad"><br>
-<input name="nama" placeholder="Nama"><br>
-<input name="nik" placeholder="NIK"><br>
-<input name="nomor_sp" placeholder="Nomor SP"><br>
-<input type="date" name="tgl_terbit_sp"><br>
-<input name="nilai_dijamin" placeholder="Nilai Dijamin"><br>
+    <h3>Headers</h3>
+    <pre>
+X-API-KEY: {{ env('SIKP_API_KEY') ?? 'your-api-key' }}
+Content-Type: application/json
+    </pre>
 
-<select name="skema">
-    <option value="11">11</option>
-    <option value="12">12</option>
-    <option value="20">20</option>
-    <option value="31">31</option>
-    <option value="32">32</option>
-</select><br>
+    <h3>Request Body</h3>
+    <pre>
+{
+  "kode_bank": "002",
+  "nomor_rekening": "123456",
+  "nomor_akad": "AKD001",
+  "tgl_akad": "2026-04-14",
+  "nama": "Nama Debitur",
+  "nik": "1234567890123456",
+  "nomor_sp": "SP001",
+  "tgl_terbit_sp": "2026-04-14",
+  "nilai_dijamin": 10000000,
+  "skema": "11"
+}
+    </pre>
 
-<button type="submit">Kirim</button>
+    <h3>Response</h3>
+    <pre>
+{
+  "success": true,
+  "message": "Data berhasil dikirim ke SIKP",
+  "data": { ... }
+}
+    </pre>
 
-</form>
+    <h3>Keterangan Field</h3>
+    <table>
+        <tr><td>kode_bank</td><td>Kode bank penyalur</td></tr>
+        <tr><td>nomor_rekening</td><td>Nomor rekening debitur</td></tr>
+        <tr><td>nomor_akad</td><td>Nomor akad kredit</td></tr>
+        <tr><td>tgl_akad</td><td>Tanggal akad (YYYY-MM-DD)</td></tr>
+        <tr><td>nama</td><td>Nama debitur</td></tr>
+        <tr><td>nik</td><td>NIK debitur</td></tr>
+        <tr><td>nomor_sp</td><td>Nomor sertifikat penjaminan</td></tr>
+        <tr><td>tgl_terbit_sp</td><td>Tanggal terbit SP</td></tr>
+        <tr><td>nilai_dijamin</td><td>Nilai penjaminan</td></tr>
+        <tr><td>skema</td><td>Kode skema SIKP</td></tr>
+    </table>
+
+</div>
 
 @endsection
