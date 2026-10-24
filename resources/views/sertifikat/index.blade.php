@@ -1,17 +1,15 @@
 @extends('layouts.app')
 
+@section('title', 'Sertifikat')
 @section('content')
-
-<h2>Data Sertifikat</h2>
-
-<form method="GET">
+<div class="page-heading"><div><p class="eyebrow">Penjaminan</p><h1>Data Sertifikat</h1><p>Daftar sertifikat penjaminan yang diterima dari SIKP.</p></div><a class="btn" href="/sertifikat/create">＋ Tambah Sertifikat</a></div>
+<form class="toolbar" method="GET">
     <input type="text" name="kode_bank" placeholder="Kode Bank" value="{{ request('kode_bank') }}">
-    <button>Filter</button>
+    <button class="btn" type="submit">Filter data</button>
 </form>
 
 @if(is_array($data) && count($data))
-
-<table>
+<div class="card table-wrap"><table>
     <thead>
         <tr>
             <th>No</th>
@@ -34,18 +32,14 @@
             <td>{{ $item['nik'] }}</td>
             <td>Rp {{ number_format($item['nilai_dijamin'],0,',','.') }}</td>
             <td>{{ \Carbon\Carbon::parse($item['tgl_akad'])->format('d-m-Y') }}</td>
-            <td>
-                <a href="/sertifikat/{{ $item['kode_bank'] }}/{{ $item['nomor_rekening'] }}">
-                    Detail
-                </a>
-            </td>
+                    <td><a class="link" href="/sertifikat/{{ $item['kode_bank'] }}/{{ $item['nomor_rekening'] }}">Detail →</a></td>
         </tr>
         @endforeach
     </tbody>
-</table>
+</table></div>
 
 @else
-<p>Tidak ada data</p>
+<div class="card empty-state">Tidak ada data sertifikat untuk filter ini.</div>
 @endif
 
 @endsection

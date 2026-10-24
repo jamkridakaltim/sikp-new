@@ -1,122 +1,52 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <title>SIKP Penjamin</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-
-    <style>
-        body {
-            font-family: Inter, Arial;
-            margin: 0;
-            background: #f5f7fb;
-        }
-
-        .mono {
-            font-family: 'IBM Plex Mono', monospace;
-            letter-spacing: 0.5px;
-        }
-
-        .sidebar {
-            width: 220px;
-            height: 100vh;
-            background: #1e293b;
-            color: white;
-            position: fixed;
-            padding: 20px;
-        }
-
-        .sidebar h2 {
-            font-size: 18px;
-            margin-bottom: 20px;
-        }
-
-        .sidebar a {
-            display: block;
-            color: #cbd5f5;
-            padding: 8px;
-            text-decoration: none;
-            border-radius: 6px;
-        }
-
-        .sidebar a:hover {
-            background: #334155;
-        }
-
-        .content {
-            margin-left: 240px;
-            padding-left: 60px;
-            padding-top: 20px;
-            padding-right: 20px;
-            padding-botton: 20px;
-        }
-
-        .card {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-        }
-
-        .stat {
-            font-size: 22px;
-            font-weight: bold;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        th, td {
-            padding: 8px;
-            border-bottom: 1px solid #eee;
-            font-size: 13px;
-        }
-
-        th {
-            background: #f1f5f9;
-            text-align: left;
-        }
-
-        .btn {
-            padding: 6px 10px;
-            background: #3b82f6;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        input {
-            padding: 6px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-    </style>
+    <title>@yield('title', 'SIKP Penjamin') · Jamkrida Kaltim</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="mono">
-
-<div class="sidebar">
-    <h2>SIKP Penjamin</h2>
-    <a href="/">Dashboard</a>
-    <a href="/sertifikat">Sertifikat</a>
-    <a href="/sertifikat/create">Tambah Sertifikat</a>
-    <a href="/klaim">Klaim</a>
-    <a href="/klaim/create">Tambah Klaim</a>
-    <a href="/logout">Keluar</a>
+<body>
+@php($current = request()->path())
+<div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <a href="/" class="brand-logo"><img src="/logo-jamkrida-kaltim.png" alt="Jamkrida Kaltim"></a>
+        </div>
+        <nav class="sidebar-nav" aria-label="Navigasi utama">
+            <div class="nav-group">
+                <p class="nav-label">Overview</p>
+                <a class="nav-item {{ $current === '/' ? 'active' : '' }}" href="/"><span class="nav-icon">⌂</span> Dashboard</a>
+            </div>
+            <div class="nav-group">
+                <p class="nav-label">Penjaminan</p>
+                <a class="nav-item {{ str_starts_with($current, 'sertifikat') ? 'active' : '' }}" href="/sertifikat"><span class="nav-icon">▣</span> Sertifikat</a>
+                <a class="nav-item {{ $current === 'sertifikat/create' ? 'active' : '' }}" href="/sertifikat/create"><span class="nav-icon">＋</span> Tambah Sertifikat</a>
+            </div>
+            <div class="nav-group">
+                <p class="nav-label">Klaim</p>
+                <a class="nav-item {{ $current === 'klaim' ? 'active' : '' }}" href="/klaim"><span class="nav-icon">↩</span> Klaim</a>
+                <a class="nav-item {{ $current === 'klaim/create' ? 'active' : '' }}" href="/klaim/create"><span class="nav-icon">＋</span> Tambah Klaim</a>
+            </div>
+            <div class="nav-footer"><a class="nav-item" href="/logout"><span class="nav-icon">↪</span> Keluar</a></div>
+        </nav>
+    </aside>
+    <div class="main-shell">
+        <header class="topbar">
+            <button class="menu-toggle" type="button" aria-label="Buka navigasi" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+            <div class="topbar-title"><strong>SIKP</strong><span>Sistem Informasi Kredit Program</span></div>
+            <div class="topbar-meta"><span class="status-dot"></span> SIKP API <strong>Online</strong></div>
+        </header>
+        <main class="content">
+            @if(session('success'))<div class="flash success">✓ {{ session('success') }}</div>@endif
+            @if(session('error'))<div class="flash error">! {{ session('error') }}</div>@endif
+            @yield('content')
+        </main>
+    </div>
 </div>
-
-<div class="content">
-    @yield('content')
-</div>
-
+<div class="sidebar-backdrop" onclick="document.getElementById('sidebar').classList.remove('open')"></div>
 </body>
 </html>

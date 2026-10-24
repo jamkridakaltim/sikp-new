@@ -1,17 +1,16 @@
 @extends('layouts.app')
 
+@section('title', 'Klaim')
 @section('content')
-
-<h2>Data Klaim</h2>
-
-<form method="GET">
+<div class="page-heading"><div><p class="eyebrow">Klaim</p><h1>Data Klaim</h1><p>Daftar pengajuan klaim yang diterima dari SIKP.</p></div><a class="btn green" href="/klaim/create">＋ Tambah Klaim</a></div>
+<form class="toolbar" method="GET">
     <input name="kode_bank" placeholder="Kode Bank" value="{{ request('kode_bank') }}">
-    <button class="btn">Filter</button>
+    <button class="btn" type="submit">Filter data</button>
 </form>
 
 @if(is_array($data) && count($data) && isset($data[0]) && is_array($data[0]))
 
-<table>
+<div class="card table-wrap"><table>
     <thead>
         <tr>
             <th>Nama</th>
@@ -34,10 +33,10 @@
         </tr>
         @endforeach
     </tbody>
-</table>
+</table></div>
 
 @else
-<p>Tidak ada data</p>
+<div class="card empty-state">Tidak ada data klaim untuk filter ini.</div>
 @endif
 
 @endsection
