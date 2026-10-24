@@ -2,7 +2,7 @@
 
 @section('title', 'Klaim')
 @section('content')
-<div class="page-heading"><div><p class="eyebrow">Klaim</p><h1>Data Klaim</h1><p>Daftar pengajuan klaim yang diterima dari SIKP.</p></div><a class="btn green" href="/klaim/create">＋ Tambah Klaim</a></div>
+<div class="page-heading"><div><p class="eyebrow">Klaim</p><h1>Data Klaim</h1><p>Daftar pengajuan klaim yang diterima dari SIKP.</p></div><a class="btn green" href="/klaim/create"><iconify-icon icon="tabler:plus" aria-hidden="true"></iconify-icon> Tambah Klaim</a></div>
 <form class="toolbar" method="GET">
     <input name="kode_bank" placeholder="Kode Bank" value="{{ request('kode_bank') }}">
     <button class="btn" type="submit">Filter data</button>

@@ -3,7 +3,7 @@
 @section('content')
 <div class="page-heading">
     <div><p class="eyebrow">Dashboard SIKP</p><h1>Ringkasan penjaminan</h1><p>Monitor sertifikat, nilai dijamin, dan klaim dari SIKP API.</p></div>
-    <div class="quick-actions"><a class="btn" href="/sertifikat/create">＋ Sertifikat</a><a class="btn green" href="/klaim/create">＋ Klaim</a></div>
+    <div class="quick-actions"><a class="btn" href="/sertifikat/create"><iconify-icon icon="tabler:plus" aria-hidden="true"></iconify-icon> Sertifikat</a><a class="btn green" href="/klaim/create"><iconify-icon icon="tabler:plus" aria-hidden="true"></iconify-icon> Klaim</a></div>
 </div>
 
 <section class="grid stats-grid">
@@ -14,10 +14,10 @@
 </section>
 
 <section class="grid two-col" style="margin-top:16px">
-    <div class="card"><div class="card-title"><div><h2>Sertifikat terbaru</h2><p>10 data penjaminan terakhir</p></div><a class="link" href="/sertifikat">Lihat semua →</a></div><div class="table-wrap">
+    <div class="card"><div class="card-title"><div><h2>Sertifikat terbaru</h2><p>10 data penjaminan terakhir</p></div><a class="link" href="/sertifikat">Lihat semua <iconify-icon icon="tabler:arrow-right" aria-hidden="true"></iconify-icon></a></div><div class="table-wrap">
         @if(is_array($sertifikat) && count($sertifikat))<table><thead><tr><th>Nama</th><th>Nilai</th><th>Tanggal</th></tr></thead><tbody>@foreach($sertifikat as $s)<tr><td>{{ $s['nama'] ?? '-' }}</td><td>Rp {{ number_format($s['nilai_dijamin'] ?? 0,0,',','.') }}</td><td>{{ isset($s['tgl_akad']) ? \Carbon\Carbon::parse($s['tgl_akad'])->format('d-m-Y') : '-' }}</td></tr>@endforeach</tbody></table>@else<div class="empty-state">Belum ada data sertifikat.</div>@endif
     </div></div>
-    <div class="card"><div class="card-title"><div><h2>Klaim terbaru</h2><p>10 data klaim terakhir</p></div><a class="link" href="/klaim">Lihat semua →</a></div><div class="table-wrap">
+    <div class="card"><div class="card-title"><div><h2>Klaim terbaru</h2><p>10 data klaim terakhir</p></div><a class="link" href="/klaim">Lihat semua <iconify-icon icon="tabler:arrow-right" aria-hidden="true"></iconify-icon></a></div><div class="table-wrap">
         @if(is_array($klaim) && count($klaim))<table><thead><tr><th>Nama</th><th>Nilai Klaim</th><th>Tanggal</th></tr></thead><tbody>@foreach($klaim as $k)<tr><td>{{ $k['nama'] ?? '-' }}</td><td>Rp {{ number_format($k['nilai_klaim'] ?? 0,0,',','.') }}</td><td>{{ isset($k['tgl_persetujuan_klaim']) ? \Carbon\Carbon::parse($k['tgl_persetujuan_klaim'])->format('d-m-Y') : '-' }}</td></tr>@endforeach</tbody></table>@else<div class="empty-state">Belum ada data klaim.</div>@endif
     </div></div>
 </section>
